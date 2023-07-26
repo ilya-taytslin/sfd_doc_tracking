@@ -9,17 +9,23 @@ declare
     permit_project_de EFP_FORM_DATA.DE%type;
     doc_type EFP_FORM_DATA.DOCUMENT_TYPE%type;
     rsa_program EFP_FORM_DATA.RSA_PROGRAM%type;
-    rsa_exists number(1);
+    
+    rsa_exists number(1); 
     vCount integer;
-    v_NIVR_CALLER_exists number(1);
+    v_NIVR_CALLER_exists number(1); 
     v_exemption_found number(1) := 0;
 BEGIN
     vCount := 0;
     select 1 into v_exemption_found
     from exemption
     where document_id = :NEW.document_id and name in ( 'HailStart', 'HailEnd');
-    
-    IF (:NEW.permit IS NOT NULL) AND v_exemption_found = 1 THEN
+    EXCEPTION
+        WHEN no_data_found
+        THEN
+            v_exemption_found := 0;
+      
+    IF (:NEW.permit IS NOT NULL) AND v_exemption_found = 1 
+    THEN
       SELECT PROJECT_CODE, 
              NVL(SUBSTR(UE, 0, INSTR(UE, '@')-1), UE), 
              DE, DOCUMENT_TYPE, nvl(RSA_PROGRAM, 'NONE')
